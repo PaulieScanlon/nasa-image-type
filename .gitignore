@@ -89,6 +89,7 @@ dist
 public
 .env.development
 .env.production
+typeDefs.txt
 
 # vuepress build output
 .vuepress/dist

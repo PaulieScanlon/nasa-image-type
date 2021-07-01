@@ -3,6 +3,22 @@ require('dotenv').config({
 });
 
 const axios = require('axios');
+const { createRemoteFileNode } = require('gatsby-source-filesystem');
+
+exports.createSchemaCustomization = ({
+  actions: { createTypes, printTypeDefinitions }
+}) => {
+  createTypes(`
+    type apod implements Node {
+      image: apodImage
+    }
+    type apodImage @dontInfer {
+      url: File @link(by: "url")
+    }
+  `);
+  // This is a dev thing, feel free to comment it out
+  printTypeDefinitions({ path: './typeDefs.txt' });
+};
 
 exports.sourceNodes = async ({
   actions: { createNode },
@@ -21,4 +37,23 @@ exports.sourceNodes = async ({
       contentDigest: createContentDigest(data)
     }
   });
+};
+
+exports.onCreateNode = async ({
+  node,
+  actions: { createNode },
+  createNodeId,
+  cache,
+  store
+}) => {
+  if (node.internal.type === 'apod') {
+    node.image = await createRemoteFileNode({
+      url: node.url,
+      parentNodeId: node.id,
+      createNode,
+      createNodeId,
+      cache,
+      store
+    });
+  }
 };
